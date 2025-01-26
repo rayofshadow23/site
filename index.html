@@ -73,11 +73,8 @@
     </div>
     <script>
         function saluta() {
-            const saluto = document.getElementById("saluto");
-            saluto.innerText = "Ecco un gattino!";
-            
             const kittenImage = document.getElementById("kitten");
-            const randomNumber = Math.floor(Math.random() * 9) + 1; // Per scegliere tra 1, 2, e 3
+            const randomNumber = Math.floor(Math.random() * 20) + 1; // Per scegliere tra 1, 2...20
             kittenImage.src = `imgs/${randomNumber}.png`;
             kittenImage.style.display = "block";
         }
