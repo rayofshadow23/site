@@ -18,6 +18,9 @@
         .overlay {
             background-color: rgba(255, 255, 255, 0.8);
             min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .container {
             text-align: center;
@@ -50,6 +53,12 @@
             font-size: 24px;
             margin-top: 20px;
         }
+        .kitten {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -57,14 +66,20 @@
         <div class="container">
             <h1>Benvenuto sul mio sito!</h1>
             <p>Questo è un esempio di sito statico ospitato su GitHub Pages.</p>
-            <button onclick="saluta()">Clicca per un saluto</button>
+            <button onclick="saluta()">Clicca per gattini!</button>
             <p id="saluto"></p>
+            <img id="kitten" class="kitten" style="display:none;" alt="gattino">
         </div>
     </div>
     <script>
         function saluta() {
             const saluto = document.getElementById("saluto");
-            saluto.innerText = "Ciao, mondo!";
+            saluto.innerText = "Ecco un gattino!";
+            
+            const kittenImage = document.getElementById("kitten");
+            const randomNumber = Math.floor(Math.random() * 3) + 1; // Per scegliere tra 1, 2, e 3
+            kittenImage.src = `imgs/${randomNumber}.png`;
+            kittenImage.style.display = "block";
         }
     </script>
 </body>
