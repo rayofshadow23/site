@@ -6,40 +6,65 @@
     <title>Benvenuto sul mio sito!</title>
     <style>
         body {
+            background-image: url('ciao.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+            color: #333;
+        }
+        .overlay {
+            background-color: rgba(255, 255, 255, 0.8);
+            min-height: 100vh;
         }
         .container {
             text-align: center;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 50px;
         }
         h1 {
-            color: #333;
+            color: #222;
+            font-size: 48px;
+            margin-bottom: 20px;
         }
         p {
-            color: #666;
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #0066cc;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #004999;
+        }
+        #saluto {
+            color: #0066cc;
+            font-size: 24px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Benvenuto sul mio sito!</h1>
-        <p>Questo è un esempio di sito statico ospitato su GitHub Pages.</p>
-        <button onclick="saluta()">Clicca per un saluto</button>
-        <p id="saluto"></p>
+    <div class="overlay">
+        <div class="container">
+            <h1>Benvenuto sul mio sito!</h1>
+            <p>Questo è un esempio di sito statico ospitato su GitHub Pages.</p>
+            <button onclick="saluta()">Clicca per un saluto</button>
+            <p id="saluto"></p>
+        </div>
     </div>
     <script>
         function saluta() {
-            document.getElementById("saluto").innerText = "Ciao, mondo!";
+            const saluto = document.getElementById("saluto");
+            saluto.innerText = "Ciao, mondo!";
         }
     </script>
 </body>
