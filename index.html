@@ -1,83 +1,197 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benvenuto sul mio sito!</title>
-    <style>
-        body {
-            background-image: url('imgs/dormiray.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .overlay {
-            background-color: rgba(255, 255, 255, 0.8);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            text-align: center;
-            padding: 50px;
-        }
-        h1 {
-            color: #222;
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        p {
-            color: #555;
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-        button {
-            padding: 15px 30px;
-            font-size: 18px;
-            cursor: pointer;
-            background-color: #1eff00ae;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #20b20daa;
-        }
-        #saluto {
-            color: #0066cc;
-            font-size: 24px;
-            margin-top: 20px;
-        }
-        .kitten {
-            max-width: 100%;
-            height: auto;
-            margin-top: 20px;
-            border-radius: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Similarità Triangolo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input, textarea { width: 100%; margin: 5px 0; font-size: 1rem; padding: 5px; }
+    button { margin: 10px 0; padding: 8px 12px; font-size: 1rem; }
+    #result, #resultEquilatero { font-weight: bold; margin-top: 15px; white-space: pre-line; font-size: 1rem; }
+
+    @media (max-width: 600px) {
+      body { margin: 10px; font-size: 0.9rem; }
+      input, textarea { font-size: 0.9rem; }
+      button { font-size: 0.9rem; padding: 6px 10px; }
+      #result, #resultEquilatero { font-size: 0.9rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="overlay">
-        <div class="container">
-            <h1>Benvenuto sul mio sito!</h1>
-            <p>Questo è un esempio di sito statico ospitato su GitHub Pages.</p>
-            <button onclick="saluta()">Clicca per gattini!</button>
-            <p id="saluto"></p>
-            <img id="kitten" class="kitten" style="display:none;" alt="gattino">
-        </div>
-    </div>
-    <script>
-        function saluta() {
-            const kittenImage = document.getElementById("kitten");
-            const randomNumber = Math.floor(Math.random() * 20) + 1; // Per scegliere tra 1, 2...20
-            kittenImage.src = `imgs/${randomNumber}.png`;
-            kittenImage.style.display = "block";
-        }
-    </script>
+  <h2>Calcolo Punteggio Field</h2>
+
+  <h3>1) Punteggio e similarità da 3 link</h3>
+  <p>Inserisci i 3 link:</p>
+  <input id="link1" placeholder="Link 1">
+  <input id="link2" placeholder="Link 2">
+  <input id="link3" placeholder="Link 3">
+
+  <p>Numero di owner diversi (default = 1):</p>
+  <input id="owners" type="number" min="1" placeholder="1">
+
+  <button onclick="calcolaSimilarita()">Calcola</button>
+
+  <div id="result"></div>
+
+  <hr>
+
+  <h3>2) Terzo punto per TRIANGOLO EQUILATERO da 2 link</h3>
+  <p>Inserisci 2 link; il tool suggerisce le 2 posizioni possibili del terzo punto per chiudere un equilatero perfetto (approssimazione locale):</p>
+  <input id="linkA" placeholder="Link A">
+  <input id="linkB" placeholder="Link B">
+  <button onclick="suggerisciEquilatero()">Suggerisci terzo punto</button>
+  <div id="resultEquilatero"></div>
+
+  <script>
+    const R = 6371; // raggio terrestre in km
+
+    function toRad(gradi) {
+      return gradi * Math.PI / 180;
+    }
+
+    function distanza(lat1, lon1, lat2, lon2) {
+      let dLat = toRad(lat2 - lat1);
+      let dLon = toRad(lon2 - lon1);
+      let a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+      let c = 2 * Math.asin(Math.sqrt(a));
+      return R * c;
+    }
+
+    function areaErone(a, b, c) {
+      let s = (a+b+c)/2;
+      return Math.sqrt(s * (s-a) * (s-b) * (s-c));
+    }
+
+    function estraiCoord(link) {
+      let match = link.match(/pll=([0-9.\-]+),([0-9.\-]+)/);
+      if (match) {
+        return [parseFloat(match[1]), parseFloat(match[2])];
+      }
+      return null;
+    }
+
+    function calcolaSimilarita() {
+      let links = [
+        document.getElementById("link1").value.trim(),
+        document.getElementById("link2").value.trim(),
+        document.getElementById("link3").value.trim()
+      ];
+
+      if (links.some(l => l === "")) {
+        document.getElementById("result").innerText = "Inserisci tutti e 3 i link";
+        return;
+      }
+
+      let coords = links.map(estraiCoord);
+      if (coords.includes(null)) {
+        document.getElementById("result").innerText = "Errore: non riesco a estrarre le coordinate da uno dei link.";
+        return;
+      }
+
+      let [A,B,C] = coords;
+
+      let ab = distanza(A[0], A[1], B[0], B[1]);
+      let bc = distanza(B[0], B[1], C[0], C[1]);
+      let ca = distanza(C[0], C[1], A[0], A[1]);
+
+      let area = areaErone(ab, bc, ca);
+      let maxLato = Math.max(ab, bc, ca);
+      let areaEquilatero = (Math.sqrt(3)/4) * maxLato**2;
+      let similarita = area / areaEquilatero;
+
+      let owners = parseInt(document.getElementById("owners").value);
+      if (isNaN(owners) || owners < 1) owners = 1;
+
+      // Punteggio per chi crea il field
+      let punteggioFieldCreator = 100 * owners * (1 + similarita);
+
+      // Punteggio per chi possiede un link ma non ha fatto il field
+      let punteggioLinkOwner = 15 * owners * (1 + similarita);
+
+      document.getElementById("result").innerText =
+        `Area triangolo: ${area.toFixed(2)} km²\n` +
+        `Area equilatero con lato max: ${areaEquilatero.toFixed(2)} km²\n` +
+        `Similarità = ${(similarita*100).toFixed(1)}%\n` +
+        `Owners: ${owners}\n` +
+        `Punteggio Field Creator = ${punteggioFieldCreator.toFixed(2)} punti\n` +
+        `Punteggio Link Owner (senza field) = ${punteggioLinkOwner.toFixed(2)} punti`;
+    }
+
+    // =====================
+    // Equilatero da 2 punti
+    // =====================
+    function suggerisciEquilatero() {
+      const linkA = document.getElementById('linkA').value.trim();
+      const linkB = document.getElementById('linkB').value.trim();
+      const out = document.getElementById('resultEquilatero');
+
+      if (!linkA || !linkB) {
+        out.innerText = 'Inserisci entrambi i link.';
+        return;
+      }
+
+      const A = estraiCoord(linkA);
+      const B = estraiCoord(linkB);
+      if (!A || !B) {
+        out.innerText = 'Non riesco a estrarre le coordinate (serve il parametro pll=lat,lon).';
+        return;
+      }
+
+      // Proiezione equirettangolare locale centrata sul punto medio
+      const lat0 = (A[0] + B[0]) / 2;
+      const lon0 = (A[1] + B[1]) / 2;
+      const lat0r = toRad(lat0);
+
+      function toLocalXY(lat, lon) {
+        const dlat = toRad(lat - lat0);
+        const dlon = toRad(lon - lon0);
+        const x = R * Math.cos(lat0r) * dlon; // km
+        const y = R * dlat; // km
+        return [x, y];
+      }
+      function toLatLon(x, y) {
+        const dlat = y / R; // rad
+        const dlon = x / (R * Math.cos(lat0r)); // rad
+        const lat = lat0 + (dlat * 180 / Math.PI);
+        const lon = lon0 + (dlon * 180 / Math.PI);
+        return [lat, lon];
+      }
+
+      const [Ax, Ay] = toLocalXY(A[0], A[1]);
+      const [Bx, By] = toLocalXY(B[0], B[1]);
+
+      const vx = Bx - Ax;
+      const vy = By - Ay;
+      const d = Math.hypot(vx, vy);
+      if (d === 0) {
+        out.innerText = 'I due punti coincidono.';
+        return;
+      }
+
+      // Punto medio
+      const Mx = (Ax + Bx) / 2;
+      const My = (Ay + By) / 2;
+
+      // Vettore perpendicolare unitario
+      const ux = -vy / d;
+      const uy =  vx / d;
+
+      // Altezza dell'equilatero
+      const h = (Math.sqrt(3) / 2) * d;
+
+      const C1 = toLatLon(Mx + ux * h, My + uy * h);
+      const C2 = toLatLon(Mx - ux * h, My - uy * h);
+
+      function fmt([lat, lon]) { return `${lat.toFixed(6)},${lon.toFixed(6)}`; }
+      function ingress([lat, lon]) { return `https://intel.ingress.com/?pll=${lat.toFixed(6)},${lon.toFixed(6)}`; }
+
+      out.innerText =
+        `Distanza base AB: ${d.toFixed(3)} km\n` +
+        `Soluzione 1: ${fmt(C1)}\n` +
+        `Link Ingress: ${ingress(C1)}\n\n` +
+        `Soluzione 2: ${fmt(C2)}\n` +
+        `Link Ingress: ${ingress(C2)}`;
+    }
+  </script>
 </body>
 </html>
